@@ -1,0 +1,355 @@
+# ///// Script created by Wouter De Prins - SE @ Cisco /////
+
+- name: Create a EPG Flow in ACI
+  hosts:  localhost
+  connection: local
+  gather_facts: no
+
+  vars_files:
+    - '{{ playbook_dir }}/files/passwords.yml' 
+    - '{{ playbook_dir }}/files/params.yml'              
+
+  tasks:
+    - name: 1. Create new tenant
+      aci_tenant:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'    
+        validate_certs: no
+        tenant: '{{ params.tenant_name }}'  
+        description: '{{ params.tenant_description }}'  
+        state: present
+
+
+    - name: 2. Create VRF in Tenant
+      aci_vrf:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'  
+        validate_certs: no
+        vrf: '{{params.vrf_name}}'
+        tenant: '{{ params.tenant_name }}'
+        policy_control_preference: enforced
+        policy_control_direction: ingress
+        state: present
+
+    - name: 3. Create new bridge domain
+      aci_bd:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'    
+        tenant: '{{ params.tenant_name }}'
+        vrf: '{{params.vrf_name}}'
+        bd: '{{ params.bd_name }}'  
+        state: present
+        validate_certs: no
+
+    - name: 4. Create new subnet
+      aci_bd_subnet:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'   
+        tenant: '{{ params.tenant_name }}' 
+        bd: '{{ params.bd_name }}'
+        gateway: '{{ params.bd_subnet_gateway }}'
+        mask: '{{ params.bd_subnet_mask }}'
+        state: present        
+        validate_certs: no
+
+    - name: 5. Add a new Application Profile
+      aci_ap:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'  
+        tenant: '{{ params.tenant_name }}' 
+        ap: '{{ params.ap_name }}'
+        description: '{{ params.ap_description }}'
+        state: present
+        validate_certs: no
+
+    - name: 6. Create first EPG and add to the Application Profile
+      aci_epg:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'  
+        tenant: '{{ params.tenant_name }}' 
+        ap: '{{ params.ap_name }}'
+        epg: '{{ params.first_epg_name }}' 
+        description: '{{ params.first_epg_description }}'
+        bd: '{{ params.bd_name }}'  
+        preferred_group: yes
+        state: present
+        validate_certs: no
+
+    - name: 7. Create second EPG and add to the Application Profile
+      aci_epg:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'  
+        tenant: '{{ params.tenant_name }}' 
+        ap: '{{ params.ap_name }}'
+        epg: '{{ params.second_epg_name }}' 
+        description: '{{ params.second_epg_description }}'
+        bd: '{{ params.bd_name }}'  
+        preferred_group: yes
+        state: present
+        validate_certs: no
+
+    - name: 8. Create a third EPG and add to the Application Profile
+      aci_epg:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'  
+        tenant: '{{ params.tenant_name }}' 
+        ap: '{{ params.ap_name }}'
+        epg: '{{ params.third_epg_name }}' 
+        description: '{{ params.third_epg_description }}'
+        bd: '{{ params.bd_name }}'  
+        preferred_group: yes
+        state: present
+        validate_certs: no
+
+    - name: 9. Add the first filter 
+      aci_filter:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        validate_certs: no
+        filter: '{{params.first_filter_filter}}'
+        tenant: '{{ params.tenant_name }}' 
+        state: present
+
+    - name: 10. Create a first entry to the first filter
+      aci_filter_entry:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        validate_certs: no
+        state: present
+        tenant: '{{ params.tenant_name }}' 
+        filter: '{{params.first_filter_filter}}'
+        entry: '{{params.first_filter_entry}}'
+        ether_type: '{{params.first_filter_ether_name}}'
+        ip_protocol: '{{params.first_filter_ip_protocol}}'
+        dst_port: '{{params.first_filter_dst_port}}'
+
+    - name: 11. Add the second filter 
+      aci_filter:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        validate_certs: no
+        filter: '{{params.second_filter_filter}}'
+        tenant: '{{ params.tenant_name }}' 
+        state: present
+
+    - name: 12. Create a first entry to the second filter
+      aci_filter_entry:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        validate_certs: no
+        state: present
+        tenant: '{{ params.tenant_name }}' 
+        filter: '{{params.second_filter_filter}}'
+        entry: '{{params.second_filter_entry}}'
+        ether_type: '{{params.second_filter_ether_name}}'
+        ip_protocol: '{{params.second_filter_ip_protocol}}'
+        dst_port: '{{params.second_filter_dst_port}}'
+
+    - name: 13. Add the third filter 
+      aci_filter:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        validate_certs: no
+        filter: '{{params.third_filter_filter}}'
+        tenant: '{{ params.tenant_name }}' 
+        state: present
+
+    - name: 14. Create a first entry to the third filter
+      aci_filter_entry:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        validate_certs: no
+        state: present
+        tenant: '{{ params.tenant_name }}' 
+        filter: '{{params.third_filter_filter}}'
+        entry: '{{params.third_filter_entry}}'
+        ether_type: '{{params.third_filter_ether_name}}'
+        ip_protocol: '{{params.third_filter_ip_protocol}}'
+        dst_port: '{{params.third_filter_dst_port}}'
+
+
+################## First Contract ##################
+
+    - name: 15. Create first contract
+      aci_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.first_contract_contract }}'
+        scope: '{{ params.first_contract_scope }}'
+        validate_certs: no
+
+    - name: 16. Add subject name to first contract
+      aci_contract_subject:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.first_contract_contract }}' 
+        subject: '{{ params.first_contract_subject }}' 
+        reverse_filter: '{{params.first_contract_subject_reverse_filter}}'
+        dscp: unspecified
+        state: present   
+        validate_certs: no     
+
+    - name: 17. Add filter to subject of the contract
+      aci_contract_subject_to_filter:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.first_contract_contract }}' 
+        subject: '{{ params.first_contract_subject }}'
+        filter: '{{ params.first_filter_filter }}'
+        validate_certs: no  
+
+################## Second Contract ##################
+
+    - name: 18. Create second contract and add subject name
+      aci_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.second_contract_contract }}'
+        validate_certs: no
+
+    - name: 19. Add subject name to second contract
+
+      aci_contract_subject:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.second_contract_contract }}' 
+        subject: '{{ params.second_contract_subject }}' 
+        reverse_filter: '{{params.second_contract_subject_reverse_filter}}'
+        dscp: unspecified
+        state: present
+        validate_certs: no        
+
+    - name: 20. Add filter to subject of the contract
+      aci_contract_subject_to_filter:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.second_contract_contract }}' 
+        subject: '{{ params.second_contract_subject }}' 
+        filter: '{{ params.second_filter_filter }}'
+        validate_certs: no  
+
+################## Third Contract ##################
+
+    - name: 21. Create third contract and add subject name
+      aci_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}'
+        contract: '{{ params.third_contract_contract }}'
+        validate_certs: no
+
+    - name: 22. Add subject name to third contract
+      aci_contract_subject:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.third_contract_contract }}' 
+        subject: '{{ params.third_contract_subject }}' 
+        reverse_filter: '{{ params.third_contract_subject_reverse_filter }}'
+        dscp: unspecified
+        state: present
+        validate_certs: no
+
+    - name: 23. Add filter to subject of the contract
+      aci_contract_subject_to_filter:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}' 
+        contract: '{{ params.third_contract_contract }}' 
+        subject: '{{ params.third_contract_subject }}' 
+        filter: '{{ params.third_filter_filter }}'
+        validate_certs: no  
+
+    - name: 24. Bind contract to first EPG 
+      aci_epg_to_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}'
+        ap: '{{ params.ap_name }}'     
+        epg: '{{ params.first_epg_name }}' 
+        validate_certs: no
+        contract: '{{ params.first_contract_contract }}'
+        contract_type: consumer ## this doesn't matter as the reserve_filter is true
+        state: present  
+
+    - name: 25. Bind second contract to first EPG 
+      aci_epg_to_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}'
+        ap: '{{ params.ap_name }}'     
+        epg: '{{ params.first_epg_name }}' 
+        validate_certs: no
+        contract: '{{ params.second_contract_contract }}'
+        contract_type: consumer ## this doesn't matter as the reserve_filter is true
+        state: present  
+
+    - name: 26. Bind contract to second EPG 
+      aci_epg_to_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}'
+        ap: '{{ params.ap_name }}'     
+        epg: '{{ params.second_epg_name }}' 
+        validate_certs: no
+        contract: '{{ params.second_contract_contract }}'
+        contract_type: consumer ## this doesn't matter as the reserve_filter is true
+        state: present  
+
+    - name: 27. Bind second contract to second EPG 
+      aci_epg_to_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}'
+        ap: '{{ params.ap_name }}'     
+        epg: '{{ params.second_epg_name }}' 
+        validate_certs: no
+        contract: '{{ params.third_contract_contract }}'
+        contract_type: consumer ## this doesn't matter as the reserve_filter is true
+        state: present  
+
+    - name: 28. Bind contract to third EPG 
+      aci_epg_to_contract:
+        hostname: '{{ apic.hostname }}'
+        username: '{{ apic.username }}'
+        password: '{{ apic.password }}'
+        tenant: '{{ params.tenant_name }}'
+        ap: '{{ params.ap_name }}'     
+        epg: '{{ params.third_epg_name }}' 
+        validate_certs: no
+        contract: '{{ params.third_contract_contract }}'
+        contract_type: consumer ## this doesn't matter as the reserve_filter is true
+        state: present  
