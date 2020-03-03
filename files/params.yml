@@ -3,74 +3,39 @@
 # Tenant variables
 params:
   # Tenant parameters
-  tenant_name: TCE_Tn  
-  tenant_description: TCE_Tn
+  tenant_name: DevNet01 
+  tenant_description: DevNetTest
 
-  # Virtual Routing & Forwarding 
-  vrf_name: TCE_VRF
-
-  # Bridge Domain & Subnet   
-  bd_name: TCE_BD
+   # Bridge Domain & Subnet   
+  bd_name: DevNet
   bd_subnet_gateway: 10.1.1.1
   bd_subnet_mask: 24
 
   # Application Profile 
-  ap_name: TCE_AP
-  ap_description: TCE Application Profile
+  ap_name: Production
+  ap_description: Production Application Profile
 
-  ######### Endpoint Groups #########
+  ######### End Point Groups #########
+  epglist:
+  - name: 'FrontEnd'
+    description: "Production FrontEnd Servers" 
+  - name: 'Middleware'
+    description: "Production Middleware Servers" 
+  - name: 'Databases'
+    description: "Production Database Servers" 
 
-  # First EPG
-  first_epg_name: TCE_FrontEnd
-  first_epg_description: TCE FrontEnd End Point Group
+  ######### Filter & Entry Creation #########
 
-  # Second EGP
-  second_epg_name: TCE_Middleware
-  second_epg_description: TCE Middleware End Point Group
-
-  # Third EGP
-  third_epg_name: TCE_Database
-  third_epg_description: TCE Database End Point Group
-
-  ######### Filter (Entry) Creation #########
-
-  # First Filter
-  first_filter_filter: Filter_HTTPS
-  first_filter_entry: HTTPS
+  first_filter_filter: Filter_HTTP
+  first_filter_entry: HTTP
   first_filter_ether_name: ip
   first_filter_ip_protocol: tcp
-  first_filter_dst_port: 443
+  first_filter_dst_port: 80
 
-  # Second Filter
-  second_filter_filter: Filter_Python_8080
-  second_filter_entry: Port8080
-  second_filter_ether_name: ip
-  second_filter_ip_protocol: tcp
-  second_filter_dst_port: 8080
-
-  # Third Filter
-  third_filter_filter: Filter_SQL
-  third_filter_entry: SQL
-  third_filter_ether_name: ip
-  third_filter_ip_protocol: tcp
-  third_filter_dst_port: 1433
-
-  ######### Contract Creation #########
+  ######### Contract & Subject Creation #########
 
   first_contract_contract: Contract_HTTPS
-  first_contract_description: 'Allow HTTPS (443) Traffic'
+  first_contract_description: 'Allow HTTP Traffic'
   first_contract_scope: context
   first_contract_subject: Subj_HTTPS
   first_contract_subject_reverse_filter: yes
-
-  second_contract_contract: Contract_8080
-  second_contract_description: 'Allow 8080 traffic'
-  second_contract_scope: context
-  second_contract_subject: Subj_8080
-  second_contract_subject_reverse_filter: yes
-
-  third_contract_contract: Contract_SQL
-  third_contract_description: 'Allow SQL (1433) Traffic'
-  third_contract_scope: context  
-  third_contract_subject: Subj_SQL
-  third_contract_subject_reverse_filter: yes
