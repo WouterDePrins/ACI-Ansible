@@ -115,7 +115,7 @@
         state: present   
         validate_certs: no     
 
-    - name: 24. Bind contract to EPG's
+    - name: 10. Bind contract to EPG's
       aci_epg_to_contract:
         hostname: '{{ apic.hostname }}'
         username: '{{ apic.username }}'
