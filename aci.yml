@@ -1,9 +1,14 @@
 # ///// Script created by Wouter De Prins - SE @ Cisco /////
-
+---
 - name: Create a EPG Flow in ACI
   hosts:  localhost
   connection: local
   gather_facts: no
+  vars:
+    aci_login: &aci_login
+      hostname: '{{ apic.hostname }}'
+      username: '{{ apic.username }}'
+      password: '{{ apic.password }}'      
 
   vars_files:
     - '{{ playbook_dir }}/files/passwords.yml' 
@@ -12,9 +17,7 @@
   tasks:
     - name: 1. Create new tenant
       aci_tenant:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'    
+        <<: *aci_login
         validate_certs: no
         tenant: '{{ params.tenant_name }}'  
         description: '{{ params.tenant_description }}'  
@@ -22,9 +25,7 @@
 
     - name: 2. Create new bridge domain
       aci_bd:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'    
+        <<: *aci_login
         tenant: '{{ params.tenant_name }}'
         bd: '{{ params.bd_name }}'  
         state: present
@@ -32,9 +33,7 @@
 
     - name: 3. Create new subnet
       aci_bd_subnet:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'   
+        <<: *aci_login
         tenant: '{{ params.tenant_name }}' 
         bd: '{{ params.bd_name }}'
         gateway: '{{ params.bd_subnet_gateway }}'
@@ -44,9 +43,7 @@
 
     - name: 4. Add a new Application Profile
       aci_ap:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'  
+        <<: *aci_login
         tenant: '{{ params.tenant_name }}' 
         ap: '{{ params.ap_name }}'
         description: '{{ params.ap_description }}'
@@ -55,9 +52,7 @@
 
     - name: 5. Create EPG's and add to the Application Profile
       aci_epg:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'  
+        <<: *aci_login
         tenant: '{{ params.tenant_name }}' 
         ap: '{{ params.ap_name }}'
         epg: '{{ item.name }}'
@@ -70,9 +65,7 @@
    
     - name: 6. Add a filter 
       aci_filter:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'
+        <<: *aci_login
         validate_certs: no
         filter: '{{params.first_filter_filter}}'
         tenant: '{{ params.tenant_name }}' 
@@ -80,9 +73,7 @@
 
     - name: 7. Create a entry for the filter
       aci_filter_entry:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'
+        <<: *aci_login
         validate_certs: no
         state: present
         tenant: '{{ params.tenant_name }}' 
@@ -94,9 +85,7 @@
 
     - name: 8. Create a contract
       aci_contract:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'
+        <<: *aci_login
         tenant: '{{ params.tenant_name }}' 
         contract: '{{ params.first_contract_contract }}'
         scope: '{{ params.first_contract_scope }}'
@@ -104,9 +93,7 @@
 
     - name: 9. Add subject name to the contract
       aci_contract_subject:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'
+        <<: *aci_login
         tenant: '{{ params.tenant_name }}' 
         contract: '{{ params.first_contract_contract }}' 
         subject: '{{ params.first_contract_subject }}' 
@@ -117,14 +104,12 @@
 
     - name: 10. Bind contract to EPG's
       aci_epg_to_contract:
-        hostname: '{{ apic.hostname }}'
-        username: '{{ apic.username }}'
-        password: '{{ apic.password }}'
+        <<: *aci_login
         tenant: '{{ params.tenant_name }}'
         ap: '{{ params.ap_name }}'     
         epg: '{{ item.name }}'
         validate_certs: no
         contract: '{{ params.first_contract_contract }}'
-        contract_type: consumer ## this doesn't matter as the reserve_filter is true
+        contract_type: consumer 
         state: present  
       loop: "{{ params.epglist }}"
